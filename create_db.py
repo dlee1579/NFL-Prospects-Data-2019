@@ -97,6 +97,32 @@ def create_SPARQ_DB():
 	print(df)
 	#df.to_csv("SPARQ_lb.csv")
 
+def get_player_tackles(player, year="2018"):
+	tackles_dict = {
+		"Tot": "TT",
+		"Solo": "ST",
+		"Loss": "TFL"
+	}
+	# tackles_types = ["Tot", "Solo", "Loss"]
+
+	try:
+		searchlink = "https://www.sports-reference.com/cfb/search/search.fcgi?search=%s"
+		player_df = pd.read_html((searchlink % player.replace(" ", "+")))[0]
+
+		# Individual player stats will have multi-indexed columns, delete first level
+		player_df.columns = player_df.columns.droplevel()
+		player_df.set_index("Year", inplace=True)
+
+		# Get only stats from the most recent year i.e. 2018 set to default
+		stats_recent = [player_df.loc[x] for x in player_df.index.to_list() if year in x][0]
+
+		# Returns Total Tackles, Solo Tackles, Tackles for Loss in that order
+		return [stats_recent["Tot"], stats_recent["Solo"], stats_recent["Loss"]]
+		# for tackle_type in tackles_types:
+		# 	#df.set_value("Vosean Joseph", tackles_dict[tackle_type],df2[tackle_type])
+		# 	df.at[player, tackles_dict[tackle_type]] = stats_recent[tackle_type]
+	except:
+		print("Invalid player name.")
 
 if __name__ == "__main__":
 	# create_database_lb(category="TFL")
@@ -105,20 +131,13 @@ if __name__ == "__main__":
 	# print(skew(normal_set))
 	# print(skewtest(normal_set))
 	# create_SPARQ_DB()
-	df = pd.read_excel("test_folder/LB prospects 2015-2019.xlsm", sheet_name="Agg Data")
 
-	# Set the Name column as the index
-	df.set_index("Name", inplace=True)
-	print(df)
 
-	# Set player to update tackles information for; example: Vosean Joseph
-	player = "Vosean Joseph".replace(" ", "+")
-	searchlink = "https://www.sports-reference.com/cfb/search/search.fcgi?search=%s"
-	df2 = pd.read_html((searchlink % player))[0]
-
-	# Individual player stats will have multi-indexed columns, delete first level
-	df2.columns = df2.columns.droplevel()
-	df2.set_index("Year")
-	print(df2)
+	# df = pd.read_excel("test_folder/LB prospects 2015-2019.xlsm", sheet_name="Agg Data")
+# 	#
+# 	# # Set the Name column as the index
+# 	# df.set_index("Name", inplace=True)
+# 	# print(df)
+	print(get_player_tackles("abcde"))
 
 
