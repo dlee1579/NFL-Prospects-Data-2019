@@ -116,5 +116,9 @@ if __name__ == "__main__":
 	searchlink = "https://www.sports-reference.com/cfb/search/search.fcgi?search=%s"
 	df2 = pd.read_html((searchlink % player))[0]
 
+	# Individual player stats will have multi-indexed columns, delete first level
+	df2.columns = df2.columns.droplevel()
+	df2.set_index("Year")
+	print(df2)
 
 
