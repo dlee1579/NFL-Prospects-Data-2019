@@ -99,7 +99,7 @@ def create_SPARQ_DB():
 	#df.to_csv("SPARQ_lb.csv")
 
 
-def get_player_tackles(player, year="2018"):
+def get_player_stats(player, year="2018"):
 	tackles_dict = {
 		"Tot": "TT",
 		"Solo": "ST",
@@ -131,24 +131,8 @@ def get_player_tackles(player, year="2018"):
 def update_database_lb():
 	# Update Linebacker Database with tackle information from Sports-Reference.com
 	df = pd.read_excel("test_folder/LB prospects 2015-2019.xlsm", sheet_name="Agg Data")
-
-
-if __name__ == "__main__":
-	# create_database_lb(category="TFL")
-	# create_histogram_lb("TFL")
-	# normal_set = random.normal(size=1000)
-	# print(skew(normal_set))
-	# print(skewtest(normal_set))
-	# create_SPARQ_DB()
-
-
-	#Initialize DataFrame of Player database, set name as index
-	# df = pd.read_excel("test_folder/LB prospects 2015-2019.xlsm", sheet_name="Agg Data").set_index("Name")
-	df = pd.read_excel("test_folder/NFL Defensive Prospects 2019.xlsx", sheet_name="LB").set_index("Name")
-	# Sampling n number of players
-	#players_recent = df.loc[df["Year"] == 2019].index.to_list()
 	players_recent = df.index.to_list()
-	# print(get_player_tackles("Alex Figueroa"))
+	# print(get_player_stats("Alex Figueroa"))
 	print("Process started.")
 
 	start = time.time()
@@ -156,7 +140,7 @@ if __name__ == "__main__":
 	for player in players_recent:
 		print(player)
 		try:
-			[TT, ST, TFL, SK, INT, PD, FR, FF] = get_player_tackles(player)
+			[TT, ST, TFL, SK, INT, PD, FR, FF] = get_player_stats(player)
 			df.at[player, "TT"] = TT
 			df.at[player, "ST"] = ST
 			df.at[player, "TFL"] = TFL
@@ -177,10 +161,120 @@ if __name__ == "__main__":
 
 	# df.to_excel("Aggregate LB DataBase 2015-2019.xlsx", sheet_name="Agg Data")
 	df.to_excel("NFL DEF 2019.xlsx", sheet_name="LB")
+
+def create_player_profile(name):
+	try:
+		df = pd.read_excel("NFL DEF 2019.xlsx", sheet_name="LB").set_index("Name").drop(columns="NFL%")
+		# print(df.index.to_list())
+		categories_percentiles = [x for x in df.columns.to_list() if "%" in x]
+		#print(categories_percentiles)
+		player = df.loc[name]
+		player_percentiles = player[categories_percentiles]
+
+		# Bar Chart for Production Data, Radar Chart for Measurables Data;
+		production_categories = ["TT%", "ST%", "TFL%", "TFL%", "SK%", "INT%", "PD%", "FF%"]
+		measurable_categories = ["HT%", "WT%", "AL%", "HS%", "WING%", "40 YD%", "20 YD%", "10 YD%", "Shuttle%", "3-Cone%", "BP%", "Vert.%", "Broad%"]
+		measurable_categories = player_percentiles[measurable_categories].dropna().index.to_list()
+		N = len(measurable_categories)
+
+		production_values = player_percentiles[production_categories].to_list()
+		measurable_values = player_percentiles[measurable_categories].to_list()
+
+		# For Radar Chart, need to repeat first value to close the circular graph
+		measurable_categories += measurable_categories[:1]
+		measurable_values += measurable_values[:1]
+
+		print(measurable_categories)
+		print(measurable_values)
+		# Radar Chart of Measurables first
+
+		# Compute angles for Radar Chart
+		angles = [n / float(N) * 2 * pi for n in range(N)]
+		angles += angles[:1]
+
+		print(len(angles))
+
+		fig = plt.figure()
+		fig.suptitle(name)
+
+		# Initialise the spider plot
+		ax = plt.subplot(121, polar=True)
+
+		# Draw one axe per variable + add labels labels yet
+		plt.xticks(angles[:-1], measurable_categories, color='grey', size=8)
+
+		# Plot data
+		ax.plot(angles, measurable_values, linewidth=1, linestyle='solid')
+
+		# Fill area
+		ax.fill(angles, measurable_values, 'b', alpha=0.1)
+		ax
+		plt.title("Measurables")
+
+		#print(player_percentiles)
+		#plt.bar(categories_percentiles, player_percentiles.to_list())
+		plt.subplot(1,2,2)
+		plt.bar(production_categories, production_values)
+		plt.title("2018 Defensive Production")
+
+		mng = plt.get_current_fig_manager()
+		mng.frame.Maximize(True)
+
+		plt.show()
+		print(player_percentiles)
+		return player
+	except KeyError:
+		print("Invalid player.")
+
+if __name__ == "__main__":
+	# create_database_lb(category="TFL")
+	# create_histogram_lb("TFL")
+	# normal_set = random.normal(size=1000)
+	# print(skew(normal_set))
+	# print(skewtest(normal_set))
+	# create_SPARQ_DB()
+
+
+	#Initialize DataFrame of Player database, set name as index
+	# df = pd.read_excel("test_folder/LB prospects 2015-2019.xlsm", sheet_name="Agg Data").set_index("Name")
+	# df = pd.read_excel("test_folder/NFL Defensive Prospects 2019.xlsx", sheet_name="LB").set_index("Name")
+	# # Sampling n number of players
+	# #players_recent = df.loc[df["Year"] == 2019].index.to_list()
+	# players_recent = df.index.to_list()
+	# # print(get_player_stats("Alex Figueroa"))
+	# print("Process started.")
+	#
+	# start = time.time()
+	#
+	# for player in players_recent:
+	# 	print(player)
+	# 	try:
+	# 		[TT, ST, TFL, SK, INT, PD, FR, FF] = get_player_stats(player)
+	# 		df.at[player, "TT"] = TT
+	# 		df.at[player, "ST"] = ST
+	# 		df.at[player, "TFL"] = TFL
+	# 		df.at[player, "SK"] = SK
+	# 		df.at[player, "INT"] = INT
+	# 		df.at[player, "PD"] = PD
+	# 		df.at[player, "FR"] = FR
+	# 		df.at[player, "FF"] = FF
+	#
+	#
+	# 	except (TypeError, IndexError) as e:
+	# 		print("%s does not have a Sports-Reference profile page." % player)
+	# 		pass
+	#
+	# end = time.time()
+	# time_elapsed = end - start
+	# print("Time elapsed: %f" % (time_elapsed))
+	#
+	# # df.to_excel("Aggregate LB DataBase 2015-2019.xlsx", sheet_name="Agg Data")
+	# df.to_excel("NFL DEF 2019.xlsx", sheet_name="LB")
 	#players_recent = df.
 # 	# # Set the Name column as the index
 # 	# df.set_index("Name", inplace=True)
 # 	# print(df)
-	#print(get_player_tackles("Patrick Willis"))
+	create_player_profile("Germaine Pratt")
+
 
 
