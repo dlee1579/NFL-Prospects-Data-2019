@@ -138,16 +138,6 @@ def update_database(pos):
 
 	timed_categories = ["40 YD%", "20 YD%", "10 YD%", "Shuttle%", "3-Cone%"]
 
-	for cat in production_categories:
-		if cat not in df.columns.to_list():
-			# df[cat[:-1]] = 0
-			df[cat] = NaN
-
-
-	for cat in measurable_categories:
-		if cat not in df.columns.to_list():
-			df[cat] = NaN
-
 	# print(get_player_stats("Alex Figueroa"))
 	print("Process started.")
 
@@ -169,15 +159,24 @@ def update_database(pos):
 			# for cat in production_categories:
 			# 	df.at[player, cat] = percentileofscore(df[cat[:-1]].to_list(), df.at[player, cat[:-1]])
 
-			for cat in measurable_categories:
-				if cat in timed_categories:
-					df.at[player, cat] = 100 - percentileofscore(df[cat[:-1]].to_list(), df.at[player, cat[:-1]])
-				else:
-					df.at[player, cat] = percentileofscore(df[cat[:-1]].to_list(), df.at[player, cat[:-1]])
+			# for cat in measurable_categories:
+			# 	if cat in timed_categories:
+			# 		df.at[player, cat] = 100 - percentileofscore(df[cat[:-1]].to_list(), df.at[player, cat[:-1]])
+			# 	else:
+			# 		df.at[player, cat] = percentileofscore(df[cat[:-1]].to_list(), df.at[player, cat[:-1]])
 
 		except (TypeError, IndexError) as e:
 			print("%s does not have a Sports-Reference profile page." % player)
 			pass
+
+	for cat in measurable_categories:
+		if cat not in df.columns.to_list():
+			# df[cat[:-1]] = 0
+			df[cat] = NaN
+
+	for cat in production_categories:
+		if cat not in df.columns.to_list():
+			df[cat] = NaN
 
 	end = time.time()
 	time_elapsed = end - start
@@ -323,7 +322,7 @@ if __name__ == "__main__":
 # 	# df.set_index("Name", inplace=True)
 # 	# print(df)
 	#create_player_profile("PJ Johnson", "DL")
-	update_database("CB")
+	update_database("EDGE")
 
 
 
